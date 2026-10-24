@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instant Fullscreen</title>
+    <title>Force Fullscreen</title>
     <style>
-        body {
+        body, html {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
             background-color: black;
+            font-family: sans-serif;
         }
 
+        /* The Video Background */
         #myVideo {
             position: absolute;
             top: 0;
@@ -22,50 +26,74 @@
             z-index: 1;
         }
 
-        /* The invisible layer that triggers the fake click */
-        #clickTrigger {
-            position: fixed;
+        /* The Invisible Trigger Layer */
+        #trigger {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 9999;
+            background-color: transparent;
             cursor: pointer;
+        }
+
+        /* Status Text */
+        #status {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            z-index: 10000;
+            font-size: 14px;
+            background: rgba(0,0,0,0.5);
         }
     </style>
 </head>
 <body>
 
-    <!-- The Video -->
+    <!-- Video -->
     <video id="myVideo" autoplay muted loop playsinline>
         <source src="https://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
     </video>
 
-    <!-- Invisible Trigger -->
-    <div id="clickTrigger"></div>
+    <!-- The Invisible Click Trigger (Directly in HTML) -->
+    <div id="trigger" onclick="forceFullScreen()"></div>
+
+    <div id="status">Attempting fullscreen...</div>
 
     <script>
-        window.onload = function() {
-            const trigger = document.getElementById('clickTrigger');
-            const video = document.getElementById('myVideo');
+        // 1. The Fullscreen Function
+        function forceFullScreen() {
+            const elem = document.documentElement;
+            const status = document.getElementById('status');
 
-            // 1. Create a Fake Click Event
-            const clickEvent = new MouseEvent('click', {
-                view: window,
-                bubbles: true,
-                cancelable: true
-            });
-
-            // 2. Dispatch the click immediately (No user needed)
-            trigger.dispatchEvent(clickEvent);
-
-            // 3. Request Fullscreen
-            // We try the video element first, then the page
-            if (video.requestFullscreen) {
-                video.requestFullscreen().catch(err => console.log(err));
-            } else if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            try {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) { /* Safari */
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) { /* IE11 */
+                    elem.msRequestFullscreen();
+                }
+                status.innerText = "Fullscreen Triggered!";
+            } catch (err) {
+                status.innerText = "Fullscreen Blocked: " + err;
             }
+        }
+
+        // 2. The Double Trigger Logic
+        window.onload = function() {
+            const status = document.getElementById('status');
+            
+            // Force 1: Immediate
+            forceFullScreen();
+
+            // Force 2: 100ms delay (Browsers often need this second trigger)
+            setTimeout(function() {
+                forceFullScreen();
+            }, 100);
         };
     </script>
 
