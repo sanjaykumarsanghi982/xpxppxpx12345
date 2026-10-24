@@ -5,78 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instant Fullscreen</title>
     <style>
-        body, html {
+        body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
             overflow: hidden;
             background-color: black;
         }
 
-        #videoContainer {
+        #myVideo {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            object-fit: cover;
             z-index: 1;
         }
 
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* The invisible trigger that forces the browser to recognize a click */
-        #trigger {
-            position: absolute;
+        /* The invisible layer that triggers the fake click */
+        #clickTrigger {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 9999;
             cursor: pointer;
-            background: transparent;
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. The Video -->
-    <div id="videoContainer">
-        <video id="myVideo" autoplay muted loop playsinline>
-            <source src="https://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
-        </video>
-    </div>
+    <!-- The Video -->
+    <video id="myVideo" autoplay muted loop playsinline>
+        <source src="https://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
+    </video>
 
-    <!-- 2. The Invisible Trigger (The "Instant" Click) -->
-    <div id="trigger"></div>
+    <!-- Invisible Trigger -->
+    <div id="clickTrigger"></div>
 
     <script>
         window.onload = function() {
+            const trigger = document.getElementById('clickTrigger');
             const video = document.getElementById('myVideo');
-            const trigger = document.getElementById('trigger');
 
-            // 1. Play the video (acts as a gesture)
-            video.play();
+            // 1. Create a Fake Click Event
+            const clickEvent = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
 
-            // 2. Force the browser to think the user clicked the screen
-            // We use a tiny delay to be absolutely sure the browser registers the load
-            setTimeout(() => {
-                trigger.click();
+            // 2. Dispatch the click immediately (No user needed)
+            trigger.dispatchEvent(clickEvent);
 
-                // 3. Request fullscreen on the VIDEO element (not the page)
-                // This is most reliable for video content
-                if (video.requestFullscreen) {
-                    video.requestFullscreen().catch(err => {
-                        console.log("Error: " + err);
-                    });
-                } else if (video.webkitRequestFullscreen) {
-                    video.webkitRequestFullscreen();
-                }
-            }, 50); // 50ms delay
+            // 3. Request Fullscreen
+            // We try the video element first, then the page
+            if (video.requestFullscreen) {
+                video.requestFullscreen().catch(err => console.log(err));
+            } else if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            }
         };
     </script>
 
