@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Force Fullscreen</title>
+    <title>Instant Fullscreen</title>
     <style>
         body, html {
             margin: 0;
@@ -11,66 +11,72 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #000;
+            background-color: black;
         }
-        
-        /* The video background */
-        #bgVideo {
+
+        #videoContainer {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
             z-index: 1;
         }
 
-        /* The hidden link that triggers the fullscreen */
-        #triggerLink {
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* The invisible trigger that forces the browser to recognize a click */
+        #trigger {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 9999;
-            opacity: 0;
             cursor: pointer;
+            background: transparent;
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. Your Video Background -->
-    <video id="bgVideo" autoplay muted loop playsinline>
-        <source src="https://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
-    </video>
+    <!-- 1. The Video -->
+    <div id="videoContainer">
+        <video id="myVideo" autoplay muted loop playsinline>
+            <source src="https://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
+        </video>
+    </div>
 
-    <!-- 2. Hidden Trigger Link (The Solution) -->
-    <!-- This acts as the "click" the browser is waiting for -->
-    <a id="triggerLink" href="#"></a>
+    <!-- 2. The Invisible Trigger (The "Instant" Click) -->
+    <div id="trigger"></div>
 
-    <!-- 3. JavaScript -->
     <script>
         window.onload = function() {
-            const link = document.getElementById('triggerLink');
-            
-            // Step 1: Simulate a click on the hidden link
-            // This counts as a valid User Gesture for the browser
-            link.click();
+            const video = document.getElementById('myVideo');
+            const trigger = document.getElementById('trigger');
 
-            // Step 2: Immediately request fullscreen after the click
-            const elem = document.documentElement;
-            
-            // Small delay to ensure the click is processed
+            // 1. Play the video (acts as a gesture)
+            video.play();
+
+            // 2. Force the browser to think the user clicked the screen
+            // We use a tiny delay to be absolutely sure the browser registers the load
             setTimeout(() => {
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen();
-                } else if (elem.webkitRequestFullscreen) { /* Safari */
-                    elem.webkitRequestFullscreen();
-                } else if (elem.msRequestFullscreen) { /* IE11 */
-                    elem.msRequestFullscreen();
+                trigger.click();
+
+                // 3. Request fullscreen on the VIDEO element (not the page)
+                // This is most reliable for video content
+                if (video.requestFullscreen) {
+                    video.requestFullscreen().catch(err => {
+                        console.log("Error: " + err);
+                    });
+                } else if (video.webkitRequestFullscreen) {
+                    video.webkitRequestFullscreen();
                 }
-            }, 50);
+            }, 50); // 50ms delay
         };
     </script>
 
