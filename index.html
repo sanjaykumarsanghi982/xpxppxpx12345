@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Force Fullscreen</title>
     <style>
         body, html {
@@ -11,30 +12,8 @@
             height: 100%;
             overflow: hidden;
             background-color: #000;
-            font-family: Arial, sans-serif;
         }
-
-        /* The big button */
-        #fsButton {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 40px 80px;
-            font-size: 24px;
-            background-color: #ff0000;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
-        }
-
-        #fsButton:hover {
-            background-color: #cc0000;
-        }
-
+        
         /* The video background */
         #bgVideo {
             position: absolute;
@@ -45,38 +24,53 @@
             object-fit: cover;
             z-index: 1;
         }
+
+        /* The hidden link that triggers the fullscreen */
+        #triggerLink {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            opacity: 0;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Video Background -->
+    <!-- 1. Your Video Background -->
     <video id="bgVideo" autoplay muted loop playsinline>
         <source src="https://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
     </video>
 
-    <!-- The Button -->
-    <button id="fsButton">CLICK HERE TO FULLSCREEN</button>
+    <!-- 2. Hidden Trigger Link (The Solution) -->
+    <!-- This acts as the "click" the browser is waiting for -->
+    <a id="triggerLink" href="#"></a>
 
+    <!-- 3. JavaScript -->
     <script>
-        // 1. Function to force fullscreen
-        function forceFullscreen() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { /* Safari */
-                elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { /* IE11 */
-                elem.msRequestFullscreen();
-            }
-        }
-
-        // 2. Trigger the button click automatically after 1 second
         window.onload = function() {
-            setTimeout(function() {
-                const btn = document.getElementById('fsButton');
-                btn.click(); // The browser sees this as a real user click
-                btn.style.display = 'none'; // Hide the button once clicked
-            }, 1000);
+            const link = document.getElementById('triggerLink');
+            
+            // Step 1: Simulate a click on the hidden link
+            // This counts as a valid User Gesture for the browser
+            link.click();
+
+            // Step 2: Immediately request fullscreen after the click
+            const elem = document.documentElement;
+            
+            // Small delay to ensure the click is processed
+            setTimeout(() => {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) { /* Safari */
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) { /* IE11 */
+                    elem.msRequestFullscreen();
+                }
+            }, 50);
         };
     </script>
 
